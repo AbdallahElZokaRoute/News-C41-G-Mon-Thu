@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">NewsApp C41 G Mon Thu</string>
+    <string name="title_activity_news_splash">NewsSplashActivity</string>
+    <string name="news_app_logo">News App Logo</string>
+    <string name="news_app_development_signature">News App Development Signature</string>
+    <string name="navigation_icon_of_side_menu">Navigation Icon of Side menu</string>
+    <string name="icon_search">Icon search</string>
+    <string name="by">By :</string>
 </resources>
