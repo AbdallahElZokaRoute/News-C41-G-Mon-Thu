@@ -11,3 +11,4 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 val gray = Color(0xFFA0A0A0)
 val black = Color(0xFF171717)
+val blackWithOpacity50 = Color(0x80000000) // ARGB

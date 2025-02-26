@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    kotlin("plugin.serialization") version "2.1.10"
 }
 
 android {
@@ -53,6 +54,10 @@ android {
 dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    val nav_version = "2.8.7"
+    implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.logging.interceptor)
