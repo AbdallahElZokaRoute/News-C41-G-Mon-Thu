@@ -56,6 +56,9 @@ dependencies {
     implementation(libs.converter.gson)
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     val nav_version = "2.8.7"
     implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation(libs.coil.compose)

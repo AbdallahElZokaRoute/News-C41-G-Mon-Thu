@@ -1,7 +1,7 @@
 package com.route.newsappc41gmonthu.news
 
-import android.util.Log
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,15 +14,17 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,58 +38,28 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.route.newsappc41gmonthu.NewsScreen
 import com.route.newsappc41gmonthu.NewsScreenContent
 import com.route.newsappc41gmonthu.R
-import com.route.newsappc41gmonthu.api.ApiManager
 import com.route.newsappc41gmonthu.api.model.ArticlesItem
-import com.route.newsappc41gmonthu.api.model.NewsResponse
 import com.route.newsappc41gmonthu.api.model.SourcesItem
-import com.route.newsappc41gmonthu.api.model.SourcesResponse
 import com.route.newsappc41gmonthu.ui.theme.gray
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun NewsScreen(categoryAPIKey: String, modifier: Modifier = Modifier) {
-    val sourcesList = remember {
-        mutableStateListOf<SourcesItem>()
-    }
-    val articlesList = remember {
-        mutableStateListOf<ArticlesItem>()
-    }
-    val selectedSourceId = remember {
-        mutableStateOf("")
-    }
+fun NewsScreen(
+    categoryAPIKey: String,
+    viewModel: NewsViewModel = viewModel(),
+    modifier: Modifier = Modifier
+) {
+    val sourcesList = viewModel.sourcesList
+    val articlesList = viewModel.articlesList
+
     LaunchedEffect(Unit) {
-        // when counter changes Launched Effect will trigger
-        getSources(categoryAPIKey = categoryAPIKey, onSuccess = { list ->
-            sourcesList.addAll(list)
-        }, onFailure = {
-            Log.e("TAG", "onFailure: $it ")
-        })
+        viewModel.getSources(categoryAPIKey)
     }
-    LaunchedEffect(selectedSourceId.value) {
-        if (selectedSourceId.value.isNotEmpty())
-            ApiManager.newsService.getNewsBySource(sources = selectedSourceId.value)
-                .enqueue(object : Callback<NewsResponse> {
-                    override fun onResponse(
-                        p0: Call<NewsResponse>,
-                        response: Response<NewsResponse>
-                    ) {
-                        val list = response.body()?.articles
-                        if (list?.isNotEmpty() == true) {
-                            articlesList.addAll(list)
-                        }
-
-                    }
-
-                    override fun onFailure(p0: Call<NewsResponse>, p1: Throwable) {
-
-                    }
-
-                })
+    LaunchedEffect(viewModel.selectedSourceId.value) {
+        viewModel.getNewsBySource()
     }
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -96,12 +68,41 @@ fun NewsScreen(categoryAPIKey: String, modifier: Modifier = Modifier) {
         if (sourcesList.isNotEmpty())
             SourcesTabsLazyRow(sources = sourcesList) { sourceId ->
                 articlesList.clear()
-                selectedSourceId.value = sourceId
+                viewModel.selectedSourceId.value = sourceId
             }
         NewsList(articlesList, modifier = Modifier.fillMaxSize())
-
-        
     }
+    if (viewModel.isLoading.value)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator(color = Color.White)
+        }
+    if (viewModel.errorState.value.isNotEmpty()) {
+        ErrorDialog(viewModel = viewModel)
+    }
+}
+
+@Composable
+fun ErrorDialog(modifier: Modifier = Modifier, viewModel: NewsViewModel) {
+    AlertDialog(
+        onDismissRequest = { viewModel.errorState.value = "" },
+        confirmButton = {
+            TextButton(onClick = { viewModel.errorState.value = "" }) {
+                Text(text = stringResource(R.string.ok))
+            }
+        },
+        title = {
+            Text(text = viewModel.errorState.value, color = Color.Black, fontSize = 14.sp)
+        })
+}
+
+@Preview
+@Composable
+private fun ErrorDialogPreview() {
+    ErrorDialog(viewModel = viewModel())
 }
 
 @Composable
@@ -239,34 +240,3 @@ private fun NewsCardPreview() {
             )
     )
 }
-
-fun getSources(
-    categoryAPIKey: String,
-    onSuccess: (sources: List<SourcesItem>) -> Unit,
-    onFailure: (message: String) -> Unit
-) {
-    ApiManager.newsService.getSources(categoryAPIKey)
-        .enqueue(object :
-            Callback<SourcesResponse> {
-            override fun onResponse(
-                call: Call<SourcesResponse>,
-                response: Response<SourcesResponse>
-            ) {
-                val list = response.body()?.sources
-                if (list?.isNotEmpty() == true) {
-                    onSuccess(list)
-                }
-                Log.e("TAG", "onResponse: ${response.body()}")
-            }
-
-            override fun onFailure(
-                call: Call<SourcesResponse>,
-                throwable: Throwable
-            ) {
-                onFailure(throwable.message ?: "")
-            }
-
-
-        })
-}
-
