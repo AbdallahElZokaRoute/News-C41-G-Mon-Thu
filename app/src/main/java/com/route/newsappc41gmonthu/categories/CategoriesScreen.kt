@@ -34,7 +34,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.route.newsappc41gmonthu.NewsScreen
 import com.route.newsappc41gmonthu.R
-import com.route.newsappc41gmonthu.api.model.Category
+import com.route.newsappc41gmonthu.categories.Category
 import com.route.newsappc41gmonthu.ui.theme.blackWithOpacity50
 
 @Composable

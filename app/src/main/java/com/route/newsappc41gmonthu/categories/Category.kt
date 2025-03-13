@@ -1,4 +1,4 @@
-package com.route.newsappc41gmonthu.api.model
+package com.route.newsappc41gmonthu.categories
 
 import com.route.newsappc41gmonthu.R
 

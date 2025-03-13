@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,20 +36,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.route.newsappc41gmonthu.NewsScreenContent
 import com.route.newsappc41gmonthu.R
-import com.route.newsappc41gmonthu.api.model.ArticlesItem
-import com.route.newsappc41gmonthu.api.model.SourcesItem
 import com.route.newsappc41gmonthu.ui.theme.gray
 
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.route.domain.entity.ArticlesItemEntity
+import com.route.domain.entity.SourcesItemEntity
 
 @Composable
 fun NewsScreen(
     categoryAPIKey: String,
-    viewModel: NewsViewModel = viewModel(),
-    modifier: Modifier = Modifier
+    viewModel: NewsViewModel = hiltViewModel(), // Jetpack Compose
+    modifier: Modifier = Modifier,
+    // Clean Arch - Kotlin Coroutines (Kotlin Flows) - Dependency Injection // Practice
+    //   Watch session  (3 H) ->
+    //       E-Commerce
 ) {
     val sourcesList = viewModel.sourcesList
     val articlesList = viewModel.articlesList
@@ -107,7 +110,7 @@ private fun ErrorDialogPreview() {
 
 @Composable
 fun SourcesTabsLazyRow(
-    sources: List<SourcesItem>,
+    sources: List<SourcesItemEntity>,
     modifier: Modifier = Modifier,
     onTabSelected: (sourceId: String) -> Unit,
 ) {
@@ -155,11 +158,10 @@ fun SourcesTabsLazyRow(
 private fun SourcesTabLazyRowPreview() {
     SourcesTabsLazyRow(
         listOf(
-            SourcesItem(name = "ABC News"),
-            SourcesItem(name = "Al-Jazeera News"),
-            SourcesItem(name = "BBC News"),
-
-            )
+            SourcesItemEntity(name = "ABC News"),
+            SourcesItemEntity(name = "Al-Jazeera News"),
+            SourcesItemEntity(name = "BBC News"),
+        )
     ) {
 
     }
@@ -173,7 +175,10 @@ private fun NewsScreenPreview() {
 }
 
 @Composable
-fun NewsList(articlesList: List<ArticlesItem>, modifier: Modifier = Modifier) {
+fun NewsList(
+    articlesList: List<ArticlesItemEntity>,
+    modifier: Modifier = Modifier
+) {
     LazyColumn {
         items(articlesList) {
             NewsCard(articlesItem = it)
@@ -182,7 +187,7 @@ fun NewsList(articlesList: List<ArticlesItem>, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun NewsCard(articlesItem: ArticlesItem, modifier: Modifier = Modifier) {
+fun NewsCard(articlesItem: ArticlesItemEntity, modifier: Modifier = Modifier) {
     Card(
         modifier
             .padding(vertical = 4.dp)
@@ -233,7 +238,7 @@ fun NewsCard(articlesItem: ArticlesItem, modifier: Modifier = Modifier) {
 @Composable
 private fun NewsCardPreview() {
     NewsCard(
-        ArticlesItem(
+        ArticlesItemEntity(
             title = "40-year-old man falls 200 feet to his death while canyoneering at national park",
             author = "Jon Haworth",
 

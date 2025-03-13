@@ -28,7 +28,9 @@ import com.route.newsappc41gmonthu.categories.CategoriesScreen
 import com.route.newsappc41gmonthu.news.NewsScreen
 import com.route.newsappc41gmonthu.ui.theme.NewsAppC41GMonThuTheme
 import com.route.newsappc41gmonthu.ui.theme.black
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     // 1- DiffUtil ->
     // 2- APIs & networking

@@ -1,86 +1,64 @@
 package com.route.newsappc41gmonthu.news
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.google.gson.Gson
-import com.route.newsappc41gmonthu.api.ApiManager
-import com.route.newsappc41gmonthu.api.model.ArticlesItem
-import com.route.newsappc41gmonthu.api.model.NewsResponse
-import com.route.newsappc41gmonthu.api.model.SourcesItem
-import com.route.newsappc41gmonthu.api.model.SourcesResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.lifecycle.viewModelScope
+import com.route.domain.entity.ArticlesItemEntity
+import com.route.domain.entity.SourcesItemEntity
+import com.route.domain.usecase.GetNewsBySourceUseCase
+import com.route.domain.usecase.GetSourcesUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class NewsViewModel : ViewModel() {
-    val sourcesList = mutableStateListOf<SourcesItem>()
-    val articlesList = mutableStateListOf<ArticlesItem>()
+@HiltViewModel
+class NewsViewModel @Inject constructor(
+    private val getSourcesUseCase: GetSourcesUseCase,
+    private val getArticlesBySourceUseCase: GetNewsBySourceUseCase,
+) : ViewModel() {
+    // Clean Architecture
+    // Dependency Injection   ->
+    val sourcesList = mutableStateListOf<SourcesItemEntity>()
+    val articlesList = mutableStateListOf<ArticlesItemEntity>()
     val selectedSourceId = mutableStateOf("")
     val errorState = mutableStateOf("")
     val isLoading = mutableStateOf(false)
-    // LiveData
-    // StateFlow
 
     fun getSources(
         categoryAPIKey: String,
     ) {
-        ApiManager.newsService.getSources(categoryAPIKey)
-            .enqueue(object :
-                Callback<SourcesResponse> {
-                override fun onResponse(
-                    call: Call<SourcesResponse>,
-                    response: Response<SourcesResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        val list = response.body()?.sources
-                        if (list?.isNotEmpty() == true) {
-                            sourcesList.addAll(list)
-                        }
-                    } else {
-                        val errorBody = response.errorBody()?.string()
-                        val gson = Gson()
-                        val sourcesResponse = gson.fromJson(errorBody, SourcesResponse::class.java)
-                        errorState.value = "${sourcesResponse.message}"
-                    }
-                    Log.e("TAG", "onResponse: ${response.body()}")
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val response = getSourcesUseCase.invoke(categoryAPIKey)
+                if (response.isNotEmpty()) {
+                    sourcesList.addAll(response)
                 }
 
-                override fun onFailure(
-                    call: Call<SourcesResponse>,
-                    throwable: Throwable
-                ) {
-                    errorState.value = throwable.message ?: "Something Went Wrong!"
-                }
-
-
-            })
+            } catch (e: Exception) {
+                errorState.value = e.message ?: "Something Went Wrong!"
+            }
+        }
     }
 
 
     fun getNewsBySource() {
         if (selectedSourceId.value.isNotEmpty()) {
             isLoading.value = true
-            ApiManager.newsService.getNewsBySource(sources = selectedSourceId.value)
-                .enqueue(object : Callback<NewsResponse> {
-                    override fun onResponse(
-                        p0: Call<NewsResponse>,
-                        response: Response<NewsResponse>
-                    ) {
-                        isLoading.value = false
-                        val list = response.body()?.articles
-                        if (list?.isNotEmpty() == true) {
-                            articlesList.addAll(list)
-                        }
-
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    val articles = getArticlesBySourceUseCase.invoke(selectedSourceId.value)
+                    isLoading.value = false
+                    if (articles.isNotEmpty()) {
+                        articlesList.clear()
+                        articlesList.addAll(articles)
                     }
-
-                    override fun onFailure(p0: Call<NewsResponse>, throwable: Throwable) {
-                        isLoading.value = false
-                        errorState.value = throwable.message ?: "Something went wrong!"
-                    }
-                })
+                } catch (e: Exception) {
+                    isLoading.value = false
+                    errorState.value = e.message ?: "Something Went Wrong!"
+                }
+            }
         }
     }
 }
